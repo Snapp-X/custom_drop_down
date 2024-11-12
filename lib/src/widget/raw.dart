@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 
 typedef ButtonBuilder = Widget Function(
@@ -32,7 +30,7 @@ class RawFlexDropDown extends StatefulWidget {
     this.dismissOnTapOutside = true,
   });
 
-  final OverlayPortalController controller;
+  final ListenableOverlayPortalController controller;
 
   final ButtonBuilder buttonBuilder;
   final MenuBuilder menuBuilder;
@@ -43,40 +41,75 @@ class RawFlexDropDown extends StatefulWidget {
   State<RawFlexDropDown> createState() => _RawFlexDropDownState();
 }
 
-class _RawFlexDropDownState extends State<RawFlexDropDown> {
+class _RawFlexDropDownState extends State<RawFlexDropDown> with SingleTickerProviderStateMixin {
   final _link = LayerLink();
 
   /// width of the button after the widget rendered
   double? _buttonWidth;
+
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeIn,
+    );
+
+    widget.controller.addListener((isVisible) {
+      if (isVisible) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final direction = Directionality.of(context);
     return CompositedTransformTarget(
       link: _link,
-      child: OverlayPortal(
+      child: OverlayPortal.targetsRootOverlay(
         controller: widget.controller,
         overlayChildBuilder: (BuildContext context) {
           Widget menu = widget.menuBuilder(context, _buttonWidth);
-
-          if (widget.dismissOnTapOutside) {
-            log('dismissOnTapOutside');
-            menu = TapRegion(
-              onTapOutside: (event) {
-                widget.controller.hide();
-              },
-              child: menu,
-            );
-          }
-
-          return CompositedTransformFollower(
-            link: _link,
-            targetAnchor: _createTargetAnchor(direction),
-            followerAnchor: _createFollowerAnchor(direction),
-            showWhenUnlinked: false,
-            child: Align(
-              alignment: _createAlignment(),
-              child: menu,
+          return FadeTransition(
+            opacity: _fadeAnimation,
+            child: Stack(
+              children: [
+                if (widget.dismissOnTapOutside)
+                  Positioned.fill(
+                    child: ModalBarrier(
+                      color: Colors.transparent,
+                      dismissible: true,
+                      barrierSemanticsDismissible: true,
+                      onDismiss: widget.controller.hide,
+                    ),
+                  ),
+                CompositedTransformFollower(
+                  link: _link,
+                  targetAnchor: _createTargetAnchor(direction),
+                  followerAnchor: _createFollowerAnchor(direction),
+                  showWhenUnlinked: false,
+                  child: Align(
+                    alignment: _createAlignment(),
+                    child: menu,
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -130,5 +163,45 @@ class _RawFlexDropDownState extends State<RawFlexDropDown> {
     _buttonWidth = context.size?.width;
 
     widget.controller.toggle();
+  }
+}
+
+typedef OverlayVisibilityChangedCallback = void Function(bool isShowing);
+
+class ListenableOverlayPortalController extends OverlayPortalController {
+  ListenableOverlayPortalController();
+
+  final _listeners = <OverlayVisibilityChangedCallback>[];
+
+  void addListener(OverlayVisibilityChangedCallback listener) {
+    _listeners.add(listener);
+  }
+
+  void removeListener(OverlayVisibilityChangedCallback listener) {
+    _listeners.remove(listener);
+  }
+
+  void _notifyListeners() {
+    for (final listener in _listeners) {
+      listener(super.isShowing);
+    }
+  }
+
+  @override
+  void hide() {
+    super.hide();
+    _notifyListeners();
+  }
+
+  @override
+  void show() {
+    super.show();
+    _notifyListeners();
+  }
+
+  @override
+  void toggle() {
+    super.toggle();
+    _notifyListeners();
   }
 }
