@@ -31,7 +31,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final OverlayPortalController _controller = OverlayPortalController();
+  final ListenableOverlayPortalController _controller = ListenableOverlayPortalController();
   MenuPosition position = MenuPosition.bottomStart;
   bool dismissOnTapOutside = true;
   bool useButtonSize = true;
