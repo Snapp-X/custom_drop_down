@@ -20,6 +20,12 @@ enum MenuPosition {
   bottomStart,
   bottomEnd,
   bottomCenter,
+  rightStart,
+  rightCenter,
+  rightEnd,
+  leftStart,
+  leftCenter,
+  leftEnd,
 }
 
 class RawFlexDropDown extends StatefulWidget {
@@ -93,6 +99,12 @@ class _RawFlexDropDownState extends State<RawFlexDropDown> {
       MenuPosition.topStart => AlignmentDirectional.bottomStart,
       MenuPosition.topEnd => AlignmentDirectional.bottomEnd,
       MenuPosition.topCenter => AlignmentDirectional.bottomCenter,
+      MenuPosition.rightStart => AlignmentDirectional.topStart,
+      MenuPosition.rightCenter => AlignmentDirectional.centerStart,
+      MenuPosition.rightEnd => AlignmentDirectional.bottomStart,
+      MenuPosition.leftStart => AlignmentDirectional.topEnd,
+      MenuPosition.leftCenter => AlignmentDirectional.centerEnd,
+      MenuPosition.leftEnd => AlignmentDirectional.bottomEnd,
     };
   }
 
@@ -108,6 +120,16 @@ class _RawFlexDropDownState extends State<RawFlexDropDown> {
       MenuPosition.topEnd => AlignmentDirectional.bottomEnd.resolve(direction),
       MenuPosition.topCenter =>
         AlignmentDirectional.bottomCenter.resolve(direction),
+      MenuPosition.rightStart =>
+        AlignmentDirectional.topStart.resolve(direction),
+      MenuPosition.rightCenter =>
+        AlignmentDirectional.centerStart.resolve(direction),
+      MenuPosition.rightEnd =>
+        AlignmentDirectional.bottomStart.resolve(direction),
+      MenuPosition.leftStart => AlignmentDirectional.topEnd.resolve(direction),
+      MenuPosition.leftCenter =>
+        AlignmentDirectional.centerEnd.resolve(direction),
+      MenuPosition.leftEnd => AlignmentDirectional.bottomEnd.resolve(direction),
     };
   }
 
@@ -123,6 +145,17 @@ class _RawFlexDropDownState extends State<RawFlexDropDown> {
       MenuPosition.topEnd => AlignmentDirectional.topEnd.resolve(direction),
       MenuPosition.topCenter =>
         AlignmentDirectional.topCenter.resolve(direction),
+      MenuPosition.rightStart => AlignmentDirectional.topEnd.resolve(direction),
+      MenuPosition.rightCenter =>
+        AlignmentDirectional.centerEnd.resolve(direction),
+      MenuPosition.rightEnd =>
+        AlignmentDirectional.bottomEnd.resolve(direction),
+      MenuPosition.leftStart =>
+        AlignmentDirectional.topStart.resolve(direction),
+      MenuPosition.leftCenter =>
+        AlignmentDirectional.centerStart.resolve(direction),
+      MenuPosition.leftEnd =>
+        AlignmentDirectional.bottomStart.resolve(direction),
     };
   }
 
