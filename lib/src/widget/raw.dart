@@ -49,6 +49,9 @@ class _RawFlexDropDownState extends State<RawFlexDropDown> {
   /// width of the button after the widget rendered
   double? _buttonWidth;
 
+  /// to handle if we click outside the dropdown
+  bool _justClosedViaOutside = false;
+
   @override
   Widget build(BuildContext context) {
     final direction = Directionality.of(context);
@@ -63,6 +66,7 @@ class _RawFlexDropDownState extends State<RawFlexDropDown> {
             log('dismissOnTapOutside');
             menu = TapRegion(
               onTapOutside: (event) {
+                _justClosedViaOutside = true;
                 widget.controller.hide();
               },
               child: menu,
@@ -127,8 +131,20 @@ class _RawFlexDropDownState extends State<RawFlexDropDown> {
   }
 
   void onTap() {
-    _buttonWidth = context.size?.width;
+    /// If the dropdown is already showing, hide it
+    if (widget.controller.isShowing) {
+      widget.controller.hide();
+    } else {
+      // Else, check if we just closed it via outside tap
+      if (_justClosedViaOutside) {
+        // Reset the flag and bail out.
+        _justClosedViaOutside = false;
+        return;
+      }
 
-    widget.controller.toggle();
+      // Otherwise, show it
+      _buttonWidth = context.size?.width;
+      widget.controller.show();
+    }
   }
 }
